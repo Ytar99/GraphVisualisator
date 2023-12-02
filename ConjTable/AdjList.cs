@@ -1,4 +1,5 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
 
 namespace System.Windows.Forms
 {
@@ -14,13 +15,11 @@ namespace System.Windows.Forms
 
         }
 
-        public void Build(int[,] matrix)
+        public void Build(List<Node> nodes = null)
         {
-            string alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-
-            for (int i = 0; i < matrix.GetLength(0); i++)
+            for (int i = 0; i < nodes.Count; i++)
             {
-                Items.Add(alphabet[i % alphabet.Length]);
+                Items.Add(nodes[i].Label);
             }
 
 

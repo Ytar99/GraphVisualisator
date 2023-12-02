@@ -1,4 +1,6 @@
-﻿using System.Drawing;
+﻿using System.Collections.Generic;
+using System.Drawing;
+using System.Security.Cryptography;
 
 namespace System.Windows.Forms
 {
@@ -38,29 +40,49 @@ namespace System.Windows.Forms
         {
             try
             {
-                e.Value = _matrix[e.RowIndex, e.ColumnIndex];
+                if (_matrix[e.RowIndex, e.ColumnIndex] == int.MaxValue)
+                {
+                    e.Value = "X";
+                    this.Rows[e.RowIndex].Cells[e.ColumnIndex].Style.BackColor = Color.FromArgb(228, 120, 120);
+                }
+                else
+                {
+                    e.Value = _matrix[e.RowIndex, e.ColumnIndex];
+
+                }
+
             }
             catch (Exception)
             {
-                throw;
             }
             base.OnCellValueNeeded(e);
         }
 
-        public void Build(int[,] matrix)
+        public void Build(int[,] matrix, int deleteIndex = -1, List<Node> nodes = null)
         {
             _matrix = matrix;
+
+            if (deleteIndex > -1)
+            {
+                Rows.RemoveAt(deleteIndex);
+                Columns.RemoveAt(deleteIndex);
+            }
+
             ColumnCount = _matrix.GetLength(1);
             RowCount = _matrix.GetLength(0);
 
-            foreach (DataGridViewColumn column in Columns)
+            if (nodes != null)
             {
-                column.HeaderText = "Col";
-            }
 
-            foreach (DataGridViewRow row in Rows)
-            {
-                row.HeaderCell.Value = "Row";
+                for (int i = 0; i < ColumnCount; i++)
+                {
+                    Columns[i].HeaderText = nodes[i].Label;
+                    Rows[i].HeaderCell.Value = nodes[i].Label;
+
+                    Rows[i].Cells[i].ReadOnly = true;
+                    Rows[i].Cells[i].Style.BackColor = Color.LightGray;
+                    Rows[i].Cells[i].Style.ForeColor = Color.Gray;
+                }
             }
 
             Invalidate();

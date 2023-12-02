@@ -4,10 +4,11 @@ using System.Drawing.Drawing2D;
 namespace System.Windows.Forms
 {
     internal static class Helper
-    { 
+    {
         private const int GapAngle = 8;//Зазор в градусах между точками входа смежных рёбер
 
         private static Pen LinkPen = new Pen(Color.Red) { CustomEndCap = new AdjustableArrowCap(5, 10, false) };
+        private static Pen LinkSelectedPen = new Pen(Color.Blue) { CustomEndCap = new AdjustableArrowCap(5, 10, false), Width = 3 };
 
         // Шрифт меток весов
         private static FontFamily weightFontFamily = new FontFamily("Arial");
@@ -17,7 +18,7 @@ namespace System.Windows.Forms
            FontStyle.Bold,
            GraphicsUnit.Pixel);
         private static SolidBrush weightBrush = new SolidBrush(Color.White);
-    
+
         public static PointF Sub(this PointF pt1, PointF pt2)
         {
             return new PointF(pt1.X - pt2.X, pt1.Y - pt2.Y);
@@ -43,7 +44,7 @@ namespace System.Windows.Forms
         /// <param name="to">Центр вершины, к которой идёт связь.</param>
         /// <param name="radius">Отступ от вершины.</param>
         /// <param name="straight">Рисовать ребро прямой или кривой Безье?</param>
-        public static void DrawLink(this Graphics g, PointF from, PointF to, float radius, string label, bool straight = false)
+        public static void DrawLink(this Graphics g, PointF from, PointF to, float radius, string label, bool selected = false, bool isBezier = false)
         {
             //Считаем точки входа ребёр графа в вершины
             var pt1 = new Vector(to.X - from.X, to.Y - from.Y); pt1.Normalize(); pt1 *= radius;
@@ -52,21 +53,36 @@ namespace System.Windows.Forms
             pt2 = pt2.Rotate(-GapAngle);
             pt1 = pt1.Add(from);
             pt2 = pt2.Add(to);
-            if (straight)
-                DrawStraightLink(g, pt1.ToPointF(), pt2.ToPointF(), label);
+            if (isBezier)
+                DrawBezierLink(g, pt1.ToPointF(), pt2.ToPointF(), label, selected);
             else
-                DrawBezierLink(g, pt1.ToPointF(), pt2.ToPointF(), label);
+                DrawStraightLink(g, pt1.ToPointF(), pt2.ToPointF(), label, selected);
         }
 
-        private static void DrawStraightLink(Graphics g, PointF from, PointF to, string Label)
+        private static void DrawStraightLink(Graphics g, PointF from, PointF to, string Label, bool selected)
         {
             var mid = from.Mid(to);
+            var pt2 = mid.Mid(to);
 
-            g.DrawLine(LinkPen, from, to);
-            g.DrawString(Label, SystemFonts.CaptionFont, SystemBrushes.ControlDarkDark, mid.X, mid.Y);
+            var v = new Vector(from.Y - to.Y, to.X - from.X);
+            v.Normalize();
+
+            var shift = new PointF(pt2.X + (float)v.X, pt2.Y + (float)v.Y);
+
+            if (selected)
+            {
+                g.DrawLine(LinkSelectedPen, from, to);
+            }
+            else
+            {
+                g.DrawLine(LinkPen, from, to);
+            }
+
+            g.DrawLineCenteredString(Label, weightFont, weightBrush, 18f, shift);
+            /*g.DrawString(Label, SystemFonts.CaptionFont, SystemBrushes.ControlDarkDark, mid.X, mid.Y);*/
         }
 
-        private static void DrawBezierLink(Graphics g, PointF from, PointF to, string Label)
+        private static void DrawBezierLink(Graphics g, PointF from, PointF to, string Label, bool selected)
         {
             //Середина отрезка между крайними точками
             var mid = from.Mid(to);
@@ -84,11 +100,20 @@ namespace System.Windows.Forms
             pt1 = v.Add(pt1).ToPointF();
             pt2 = v.Add(pt2).ToPointF();
 
-            var shift = new PointF(mid.X + (float)v.X * (float)0.75, mid.Y + (float)v.Y * (float)0.75);
+            /*var shift = new PointF(pt2.X + (float)v.X * (float)0.75, pt2.Y + (float)v.Y * (float)0.75);*/
+            var shift = new PointF(pt2.X - (float)v.X / (float)2.35, pt2.Y - (float)v.Y / (float)2.35);
             /*g.DrawLine(SystemPens.MenuText, mid, shift);*/
             /*mid = v.Add(shift).ToPointF();*/
 
-            g.DrawBezier(LinkPen, from, pt1, pt2, to);
+
+            if (selected)
+            {
+                g.DrawBezier(LinkSelectedPen, from, pt1, pt2, to);
+            }
+            else
+            {
+                g.DrawBezier(LinkPen, from, pt1, pt2, to);
+            }
             g.DrawLineCenteredString(Label, weightFont, weightBrush, 18f, shift);
         }
 
@@ -105,7 +130,7 @@ namespace System.Windows.Forms
         public static void DrawCenteredString(this Graphics g, string text, Font font, Brush brush, float radius)
         {
             var rect = new RectangleF(-radius, -radius, 2 * radius, 2 * radius);
-            rect.Inflate(-3, -3);
+            rect.Inflate(-2, -4);
             g.DrawString(text, font, brush, rect, new StringFormat { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center });
         }
         /// <summary>
