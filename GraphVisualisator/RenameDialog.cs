@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
-namespace ConjTable.Demo
+namespace GraphVisualisator
 {
     public partial class RenameDialog : Form
     {

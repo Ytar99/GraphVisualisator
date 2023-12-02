@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Forms;
 
-namespace ConjTable.Demo
+namespace GraphVisualisator
 {
     static class Program
     {

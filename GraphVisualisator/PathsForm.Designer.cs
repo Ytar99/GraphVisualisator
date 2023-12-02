@@ -1,4 +1,4 @@
-﻿namespace ConjTable.Demo
+﻿namespace GraphVisualisator
 {
     partial class PathsForm
     {

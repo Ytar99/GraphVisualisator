@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows.Forms;
 
-namespace ConjTable.Demo
+namespace GraphVisualisator
 {
     public partial class MainForm : Form
     {
